@@ -1,8 +1,15 @@
 // Edge Function: save-user.ts
 // Recebe { account } e faz upsert na tabela users
-// Requer: import { createClient } from '@supabase/supabase-js' (Edge Runtime)
-// @ts-expect-error: Import válido no ambiente Deno/Supabase Edge Functions
+// @deno-types="npm:@supabase/supabase-js"
+import { createClient as createSupabaseClient } from "npm:@supabase/supabase-js";
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+
+function createClient() {
+  return createSupabaseClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!
+  );
+}
 
 serve(async (req) => {
   if (req.method !== 'POST') {
@@ -18,10 +25,4 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
   return new Response(JSON.stringify({ success: true }), { status: 200 });
-});
-
-// Helper para criar o client do Supabase
-function createClient() {
-  // @ts-ignore
-  return (globalThis as any).createSupabaseClient();
-} 
+}); 
