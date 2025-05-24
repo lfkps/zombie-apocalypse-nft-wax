@@ -11,10 +11,19 @@ const WAX_CHAIN = {
 };
 const COLLECTION = process.env.NEXT_PUBLIC_WAX_COLLECTION || "fishergame11";
 
+// Tipagem para NFT do AtomicAssets
+interface NFTData {
+  img?: string;
+}
+interface NFT {
+  asset_id: string;
+  data: NFTData;
+}
+
 export default function Home() {
   // Placeholder para estado de login e inventário
   const [account, setAccount] = useState<string | null>(null);
-  const [inventory, setInventory] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<NFT[]>([]);
   const [loading, setLoading] = useState(false);
   const [minting, setMinting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -51,7 +60,7 @@ export default function Home() {
     try {
       const url = `https://wax.api.atomicassets.io/atomicassets/v1/assets?owner=${account}&collection_name=${COLLECTION}`;
       const { data } = await axios.get(url);
-      setInventory(data.data || []);
+      setInventory((data.data || []) as NFT[]);
     } catch {
       setToast("Erro ao buscar inventário");
     }
@@ -118,7 +127,7 @@ export default function Home() {
                       width={80}
                       height={80}
                       className="w-20 h-20 object-cover rounded mb-2"
-                      onError={(event) => { (event.target as HTMLImageElement).style.display = 'none'; }}
+                      onError={(event: React.SyntheticEvent<HTMLImageElement, Event>) => { (event.target as HTMLImageElement).style.display = 'none'; }}
                     />
                     <span className="text-xs text-zinc-300">ID: {nft.asset_id}</span>
                   </div>
