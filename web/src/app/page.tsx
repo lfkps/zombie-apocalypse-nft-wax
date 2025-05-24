@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SessionKit } from "@wharfkit/session";
 import { WalletPluginAnchor } from "@wharfkit/wallet-plugin-anchor";
 import axios from "axios";
+import Image from "next/image";
 
 const WAX_CHAIN = {
   id: "f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12",
@@ -37,8 +38,8 @@ export default function Home() {
       // Salvar usuário no backend
       await axios.post("/api/save-user", { account: actor });
       fetchInventory(actor);
-    } catch (e: any) {
-      setToast("Falha no login: " + (e.message || e));
+    } catch (e) {
+      setToast("Falha no login: " + (e instanceof Error ? e.message : String(e)));
     } finally {
       setLoading(false);
     }
@@ -51,7 +52,7 @@ export default function Home() {
       const url = `https://wax.api.atomicassets.io/atomicassets/v1/assets?owner=${account}&collection_name=${COLLECTION}`;
       const { data } = await axios.get(url);
       setInventory(data.data || []);
-    } catch (e) {
+    } catch {
       setToast("Erro ao buscar inventário");
     }
   }
@@ -68,7 +69,7 @@ export default function Home() {
       } else {
         setToast(data.error || "Erro ao mintar NFT");
       }
-    } catch (e: any) {
+    } catch {
       setToast("Erro ao mintar NFT");
     } finally {
       setMinting(false);
@@ -111,11 +112,13 @@ export default function Home() {
               ) : (
                 inventory.map((nft, i) => (
                   <div key={i} className="bg-zinc-900 rounded p-2 flex flex-col items-center">
-                    <img
-                      src={`https://ipfs.io/ipfs/${nft.data.img?.replace('ipfs://', '')}`}
+                    <Image
+                      src={nft.data.img ? `https://ipfs.io/ipfs/${nft.data.img.replace('ipfs://', '')}` : "/placeholder.png"}
                       alt="NFT"
+                      width={80}
+                      height={80}
                       className="w-20 h-20 object-cover rounded mb-2"
-                      onError={(e: any) => { e.target.style.display = 'none'; }}
+                      onError={(event) => { (event.target as HTMLImageElement).style.display = 'none'; }}
                     />
                     <span className="text-xs text-zinc-300">ID: {nft.asset_id}</span>
                   </div>
